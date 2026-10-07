@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
-public class ExemploController {
+public class DemoController {
  @GetMapping("/")
  public String getMensagemInicial() {
  return "Aplicacao Spring-Boot funcionando!";
