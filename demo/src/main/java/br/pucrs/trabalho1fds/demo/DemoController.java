@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(DemoController.BASE_URL)
+@RequestMapping("/acmepolling")
 public class DemoController {
 
     @GetMapping({"", "/"})
