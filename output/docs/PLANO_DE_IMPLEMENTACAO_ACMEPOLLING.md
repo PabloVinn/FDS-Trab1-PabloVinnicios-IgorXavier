@@ -24,7 +24,7 @@ Este documento organiza o desenvolvimento do Trabalho I de Fundamentos de Desenv
 - [x] Três partidos, três localidades e três candidatos elegíveis.
 - [x] Dois candidatos na mesma localidade.
 - [x] Validação de voto iniciada.
-- [ ] Compilação validada com Java 21.
+- [x] Compilação validada com Java 21.
 - [ ] Dez endpoints do enunciado.
 - [ ] Testes completos.
 - [ ] Relatório e diagramas.
