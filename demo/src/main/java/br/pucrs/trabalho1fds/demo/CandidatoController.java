@@ -138,6 +138,43 @@ public class CandidatoController {
 
             // Valida se o numero do candidato é igual ao numero passado no path -
             if (candidato.getNumero() == numero) {
+                String situacaoAtual = candidato.getSituacao();
+                boolean podeAlterar = false;
+
+                // Pré-candidato pode ser aprovado, reprovado ou removido.
+                if (situacaoAtual.equals("PRECANDIDATO")) {
+                    if (
+                        "ELEGIVEL".equals(status) ||
+                        "INELEGIVEL".equals(status) ||
+                        "REMOVIDO".equals(status)
+                    ) {
+                        podeAlterar = true;
+                    }
+                }
+
+                // Inelegível pode voltar a ser elegível ou ser removido.
+                if (situacaoAtual.equals("INELEGIVEL")) {
+                    if ("ELEGIVEL".equals(status) || "REMOVIDO".equals(status)) {
+                        podeAlterar = true;
+                    }
+                }
+
+                // Elegível pode ficar inelegível ou receber o resultado da eleição.
+                if (situacaoAtual.equals("ELEGIVEL")) {
+                    if (
+                        "INELEGIVEL".equals(status) ||
+                        "ELEITO".equals(status) ||
+                        "NAOELEITO".equals(status)
+                    ) {
+                        podeAlterar = true;
+                    }
+                }
+
+                // Não altera estados finais nem aceita uma situação desconhecida.
+                if (!podeAlterar) {
+                    return null;
+                }
+
                 candidato.setSituacao(status);
 
                 return new CadastroCompleto(
@@ -153,6 +190,14 @@ public class CandidatoController {
         // percorre pelos candidatos -
         for (Candidato candidato : candidatos) {
             if (candidato.getNumero() == numero) {
+                String situacaoAtual = candidato.getSituacao();
+
+                // Apenas pré-candidatos e inelegíveis podem ser removidos.
+                if (!situacaoAtual.equals("PRECANDIDATO")
+                        && !situacaoAtual.equals("INELEGIVEL")) {
+                    return false;
+                }
+
                 // Remoção lógica: mantém o candidato na lista.
                 candidato.setSituacao("REMOVIDO");
                 return true;
