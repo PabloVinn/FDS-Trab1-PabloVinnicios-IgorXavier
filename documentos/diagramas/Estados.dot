@@ -1,0 +1,17 @@
+digraph Estados {
+  graph [rankdir=LR, bgcolor="white", pad=.35, nodesep=.7, ranksep=1.05];
+  node [shape=box, style=rounded, fontname="Arial", fontsize=16, margin=".22,.16"];
+  edge [fontname="Arial", fontsize=13];
+  Inicio [shape=circle, label="", width=.18, fixedsize=true, style=filled, fillcolor=black];
+  PRECANDIDATO; ELEGIVEL; INELEGIVEL; REMOVIDO; ELEITO; NAOELEITO;
+  {rank=same; REMOVIDO; ELEITO; NAOELEITO;}
+  Inicio -> PRECANDIDATO [label="cadastro"];
+  PRECANDIDATO -> ELEGIVEL [label="aprovação"];
+  PRECANDIDATO -> INELEGIVEL [label="reprovação"];
+  PRECANDIDATO -> REMOVIDO [label="remoção"];
+  INELEGIVEL -> ELEGIVEL [label="nova aprovação"];
+  ELEGIVEL -> INELEGIVEL [label="perda de\nelegibilidade", constraint=false];
+  INELEGIVEL -> REMOVIDO [label="remoção"];
+  ELEGIVEL -> ELEITO [label="vencedor da apuração"];
+  ELEGIVEL -> NAOELEITO [label="demais candidatos"];
+}

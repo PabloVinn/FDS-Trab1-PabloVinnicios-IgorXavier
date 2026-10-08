@@ -1,0 +1,34 @@
+digraph Classes {
+  graph [rankdir=TB, bgcolor="white", pad=.25, nodesep=.45, ranksep=.55, splines=spline];
+  node [shape=plain, fontname="Arial", fontsize=14];
+  edge [fontname="Arial", fontsize=12, color="#444444"];
+  Controller [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD><B>DemoController</B></TD></TR>
+    <TR><TD ALIGN="LEFT">- acervo : Acervo</TD></TR>
+    <TR><TD ALIGN="LEFT">+ listaCandidatos()<BR ALIGN="LEFT"/>+ listaCandidatosLocalidadeSituacao(cep, situacao)<BR ALIGN="LEFT"/>+ cadCandidato(payload)<BR ALIGN="LEFT"/>+ cadVoto(payload)<BR ALIGN="LEFT"/>+ consultaEleito(cep)<BR ALIGN="LEFT"/>+ consultaCandidato(numero)<BR ALIGN="LEFT"/>+ consultaLocalidade(cep)<BR ALIGN="LEFT"/>+ listaMaisVotadosPartido()<BR ALIGN="LEFT"/>+ atualizaCandidato(numero, status)<BR ALIGN="LEFT"/>+ removeCandidato(numero)<BR ALIGN="LEFT"/></TD></TR>
+  </TABLE>>];
+  Testes [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD><B>«testes JUnit»</B></TD></TR><TR><TD ALIGN="LEFT">CandidatoTests<BR ALIGN="LEFT"/>VotacaoTests<BR ALIGN="LEFT"/>ApuracaoTests<BR ALIGN="LEFT"/>EndpointsHttpTests<BR ALIGN="LEFT"/></TD></TR>
+  </TABLE>>];
+  {rank=same; Controller; Testes;}
+  Testes:w -> Controller:e [style=dashed, label="testa", constraint=false];
+  Acervo [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7">
+    <TR><TD><B>«Component» Acervo</B></TD></TR>
+    <TR><TD ALIGN="LEFT">- partidos : List&lt;Partido&gt;<BR ALIGN="LEFT"/>- localidades : List&lt;Localidade&gt;<BR ALIGN="LEFT"/>- candidatos : List&lt;Candidato&gt;<BR ALIGN="LEFT"/>- votos : List&lt;Voto&gt;<BR ALIGN="LEFT"/></TD></TR>
+    <TR><TD ALIGN="LEFT">+ buscarCandidato(numero)<BR ALIGN="LEFT"/>+ buscarPartido(codigo)<BR ALIGN="LEFT"/>+ buscarLocalidade(cep)<BR ALIGN="LEFT"/>+ ehVotoValido(voto) : boolean<BR ALIGN="LEFT"/>+ listarCandidatos()<BR ALIGN="LEFT"/>+ listarCandidatosLocalidadeSituacao(cep, situacao)<BR ALIGN="LEFT"/>+ cadastrarCandidato(payload)<BR ALIGN="LEFT"/>+ cadastrarVoto(payload)<BR ALIGN="LEFT"/>+ consultarEleito(cep)<BR ALIGN="LEFT"/>+ consultarCandidato(numero)<BR ALIGN="LEFT"/>+ consultarLocalidade(cep)<BR ALIGN="LEFT"/>+ listarMaisVotadosPartido()<BR ALIGN="LEFT"/>+ atualizarSituacao(numero, status)<BR ALIGN="LEFT"/>+ removerCandidato(numero)<BR ALIGN="LEFT"/></TD></TR>
+  </TABLE>>];
+  Controller -> Acervo [label="usa"];
+  Partido [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Partido</B></TD></TR><TR><TD ALIGN="LEFT">- codigo : int<BR ALIGN="LEFT"/>- nome : String<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  Candidato [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Candidato</B></TD></TR><TR><TD ALIGN="LEFT">~ numero : int<BR ALIGN="LEFT"/>~ nome : String<BR ALIGN="LEFT"/>~ situacao : String<BR ALIGN="LEFT"/>~ partido : Partido<BR ALIGN="LEFT"/>~ localidade : Localidade<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  Localidade [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Localidade</B></TD></TR><TR><TD ALIGN="LEFT">~ cep : String<BR ALIGN="LEFT"/>~ nome : String<BR ALIGN="LEFT"/>~ qtdEleitores : int<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  Voto [label=<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Voto</B></TD></TR><TR><TD ALIGN="LEFT">- id : int<BR ALIGN="LEFT"/>- hora : double<BR ALIGN="LEFT"/>- candidato : Candidato<BR ALIGN="LEFT"/>- localidade : Localidade<BR ALIGN="LEFT"/>- numeroCandidato : int<BR ALIGN="LEFT"/>- valido : boolean<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+  {rank=same; Partido; Candidato; Localidade;}
+  Partido:e -> Candidato:w [arrowhead=none, taillabel="1", headlabel="0..*", labeldistance=2];
+  Candidato:e -> Localidade:w [arrowhead=none, taillabel="0..*", headlabel="1", labeldistance=2];
+  Candidato -> Voto [arrowhead=none, taillabel="0..1", headlabel="0..*"];
+  Localidade -> Voto [arrowhead=none, taillabel="1", headlabel="0..*"];
+  Acervo -> Partido [dir=both, arrowtail=odiamond, arrowhead=none, taillabel="1", headlabel="0..*"];
+  Acervo -> Candidato [dir=both, arrowtail=odiamond, arrowhead=none, taillabel="1", headlabel="0..*"];
+  Acervo -> Localidade [dir=both, arrowtail=odiamond, arrowhead=none, taillabel="1", headlabel="0..*"];
+  Acervo -> Voto [dir=both, arrowtail=odiamond, arrowhead=none, taillabel="1", headlabel="0..*"];
+}
