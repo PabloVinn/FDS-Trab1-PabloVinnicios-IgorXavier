@@ -2,16 +2,19 @@ package br.pucrs.trabalho1fds.demo;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("acmepolling/cadastro")
+@RequestMapping("/acmepolling/cadastro")
 public class CandidatoController {
 
     private final List<Candidato> candidatos;
@@ -23,20 +26,38 @@ public class CandidatoController {
         this.candidatos = acervo.getCandidatos();
     }
 
+    // Campos que os GETs e o PUT devolvem no JSON.
+    public record CadastroCompleto(int numero, String nome, String situacao,
+            String nome_partido, String nome_localidade) {}
+
+    public record CandidatoResumo(int numero, String nome) {}
+
     @GetMapping("/listacandidatos")
-    public List<Candidato> getCandidatos() {
-        return candidatos;
+    public List<CadastroCompleto> getCandidatos() {
+        List<CadastroCompleto> resultado = new ArrayList<>();
+
+        for (Candidato candidato : candidatos) {
+            resultado.add(new CadastroCompleto(
+                    candidato.getNumero(), candidato.getNome(), candidato.getSituacao(),
+                    candidato.getPartido().getNome(), candidato.getLocalidade().getNome()));
+        }
+        return resultado;
     }
 
-    @GetMapping("/listacandidatoslocalidade/{cep}/{situacao}")
-    public List<Candidato> getCandidatosLocalidade(
-        @RequestParam(value = "cep") String cep,
-        @RequestParam(value = "situacao") String situacao) 
+    @GetMapping("/listacandidatoslocalidade/{cep}/situação/{situacao}")
+    public List<CandidatoResumo> getCandidatosLocalidade(
+        @PathVariable("cep") String cep,
+        @PathVariable("situacao") String situacao)
     {
-        return candidatos.stream()
-            .filter(candidato -> candidato.getLocalidade().getCep().equals(cep))
-            .filter(candidato -> candidato.getSituacao().equals(situacao))
-            .toList();
+        List<CandidatoResumo> resultado = new ArrayList<>();
+
+        for (Candidato candidato : candidatos) {
+            if (candidato.getLocalidade().getCep().equals(cep)
+                    && candidato.getSituacao().equals(situacao)) {
+                resultado.add(new CandidatoResumo(candidato.getNumero(), candidato.getNome()));
+            }
+        }
+        return resultado;
     }
 
     // Classe para o body do POST, já que o professor quis q tivesse esses args.
@@ -92,6 +113,35 @@ public class CandidatoController {
         Candidato candidato = new Candidato(
                 dados.numero(), dados.nome(), "PRECANDIDATO", partido, localidade);
         return candidatos.add(candidato);
+    }
+
+    @PutMapping("/atualizacandidato/{numero}/situacao/{status}")
+    public CadastroCompleto atualizarCandidato(
+            @PathVariable("numero") int numero,
+            @PathVariable("status") String status) {
+
+        for (Candidato candidato : candidatos) {
+            if (candidato.getNumero() == numero) {
+                candidato.setSituacao(status);
+
+                return new CadastroCompleto(
+                        candidato.getNumero(), candidato.getNome(), candidato.getSituacao(),
+                        candidato.getPartido().getNome(), candidato.getLocalidade().getNome());
+            }
+        }
+        return null;
+    }
+
+    @DeleteMapping("/removecandidato")
+    public boolean removerCandidato(@RequestBody int numero) {
+        for (Candidato candidato : candidatos) {
+            if (candidato.getNumero() == numero) {
+                // Remoção lógica: mantém o candidato na lista.
+                candidato.setSituacao("REMOVIDO");
+                return true;
+            }
+        }
+        return false;
     }
 
 }
