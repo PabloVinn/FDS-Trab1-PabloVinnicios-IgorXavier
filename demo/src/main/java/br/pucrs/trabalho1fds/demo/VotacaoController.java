@@ -12,6 +12,7 @@ public class VotacaoController {
     private final Acervo acervo;
 
     public VotacaoController(Acervo acervo) {
+        // Instancia do acervo -
         this.acervo = acervo;
     }
 
@@ -35,6 +36,7 @@ public class VotacaoController {
             }
         }
 
+        // Valida se a localidade existe -
         Localidade localidade = null;
         for (Localidade l : acervo.getLocalidades()) {
             if (l.getCep().equals(dados.cep())) {
@@ -46,6 +48,7 @@ public class VotacaoController {
             return false;
         }
 
+        // Valida se o candidato existe -
         Candidato candidato = null;
         for (Candidato c : acervo.getCandidatos()) {
             if (c.getNumero() == dados.numero()) {
