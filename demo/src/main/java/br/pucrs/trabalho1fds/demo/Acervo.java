@@ -56,5 +56,13 @@ public class Acervo {
         // Aqui é para pegar os candidatos ja criado em acervos
         return candidatos;
     }
+
+    public List<Partido> getPartidos() {
+        return partidos;
+    }
+
+    public List<Localidade> getLocalidades() {
+        return localidades;
+    }
     
 }
