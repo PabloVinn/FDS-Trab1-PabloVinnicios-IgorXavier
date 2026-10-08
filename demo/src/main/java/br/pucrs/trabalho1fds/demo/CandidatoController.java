@@ -26,7 +26,8 @@ public class CandidatoController {
         this.candidatos = acervo.getCandidatos();
     }
 
-    // Campos que os GETs e o PUT devolvem no JSON.
+    // As Classes modelo de retorno dos response.
+    // O professor especificou o retorno lá no PDF
     public record CadastroCompleto(int numero, String nome, String situacao,
             String nome_partido, String nome_localidade) {}
 
@@ -34,13 +35,17 @@ public class CandidatoController {
 
     @GetMapping("/listacandidatos")
     public List<CadastroCompleto> getCandidatos() {
+        // Cria uma lista do resultado vazio -
         List<CadastroCompleto> resultado = new ArrayList<>();
-
+        
+        // Para cada candidato coloca na lista -
         for (Candidato candidato : candidatos) {
             resultado.add(new CadastroCompleto(
                     candidato.getNumero(), candidato.getNome(), candidato.getSituacao(),
                     candidato.getPartido().getNome(), candidato.getLocalidade().getNome()));
         }
+
+        // retorna a lista de candidatos -
         return resultado;
     }
 
@@ -49,14 +54,22 @@ public class CandidatoController {
         @PathVariable("cep") String cep,
         @PathVariable("situacao") String situacao)
     {
+        // Cria uma lista do resultado vazio -
         List<CandidatoResumo> resultado = new ArrayList<>();
 
+        // Percorre pelos candidatos -
         for (Candidato candidato : candidatos) {
-            if (candidato.getLocalidade().getCep().equals(cep)
-                    && candidato.getSituacao().equals(situacao)) {
+            if (
+                    // Se o CEP eh igual ao pedido -
+                    candidato.getLocalidade().getCep().equals(cep)
+                    // E se a situacoa eh igual ao pedido -
+                    && candidato.getSituacao().equals(situacao)) 
+                {
+                // Adiciona na lista de resultado o candidato resumido -
                 resultado.add(new CandidatoResumo(candidato.getNumero(), candidato.getNome()));
             }
         }
+        // retorna a lista de candidatos filtrados -
         return resultado;
     }
 
@@ -119,8 +132,11 @@ public class CandidatoController {
     public CadastroCompleto atualizarCandidato(
             @PathVariable("numero") int numero,
             @PathVariable("status") String status) {
-
+        
+        // percorre pelos candidatos -
         for (Candidato candidato : candidatos) {
+
+            // Valida se o numero do candidato é igual ao numero passado no path -
             if (candidato.getNumero() == numero) {
                 candidato.setSituacao(status);
 
@@ -134,6 +150,7 @@ public class CandidatoController {
 
     @DeleteMapping("/removecandidato")
     public boolean removerCandidato(@RequestBody int numero) {
+        // percorre pelos candidatos -
         for (Candidato candidato : candidatos) {
             if (candidato.getNumero() == numero) {
                 // Remoção lógica: mantém o candidato na lista.
