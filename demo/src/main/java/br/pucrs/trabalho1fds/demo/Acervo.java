@@ -40,14 +40,15 @@ public class Acervo {
         if (!"ELEGIVEL".equalsIgnoreCase(c.getSituacao())) return false;
 
         // Candidato deve ser da mesma localidade do voto
-        if (!c.getLocalidade().getCep().equalsIgnoreCase(voto.getLocalidade().getCep())) return false;
+        if (c.getLocalidade() == null
+                || !c.getLocalidade().getCep().equalsIgnoreCase(voto.getLocalidade().getCep())) return false;
 
         // Quantidade total de votos na localidade não pode exceder o total de eleitores
         long votosNaLocalidade = votos.stream()
+                .filter(v -> v != voto && v.getLocalidade() != null)
                 .filter(v -> v.getLocalidade().getCep().equalsIgnoreCase(voto.getLocalidade().getCep()))
                 .count();
-        int posicaoVoto = votos.indexOf(voto) + 1;
-        if (posicaoVoto > voto.getLocalidade().getQtdEleitores()) return false;
+        if (votosNaLocalidade >= voto.getLocalidade().getQtdEleitores()) return false;
 
         return true;
     }
@@ -63,6 +64,10 @@ public class Acervo {
 
     public List<Localidade> getLocalidades() {
         return localidades;
+    }
+
+    public List<Voto> getVotos() {
+        return votos;
     }
     
 }

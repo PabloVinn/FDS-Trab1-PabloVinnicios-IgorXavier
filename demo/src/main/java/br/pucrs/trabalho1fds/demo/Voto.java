@@ -7,12 +7,31 @@ public class Voto{
     private int hora;
     private Candidato candidato;
     private Localidade localidade;
+    private int numeroCandidato;
+    private boolean valido;
 
     public Voto (int id, int hora){
+        this(id, hora, 0, null, null);
+    }
+
+    public Voto(int id, int hora, int numeroCandidato, Candidato candidato, Localidade localidade) {
         this.id = id;
         this.hora = hora;
+        this.numeroCandidato = numeroCandidato;
         this.candidato = candidato;
         this.localidade = localidade;
+    }
+
+    public int getNumeroCandidato() {
+        return numeroCandidato;
+    }
+
+    public boolean isValido() {
+        return valido;
+    }
+
+    public void setValido(boolean valido) {
+        this.valido = valido;
     }
 
     public int getId(){ 
