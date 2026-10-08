@@ -1,0 +1,4 @@
+# Evita conversão de quebras de linha em documentos e imagens.
+*.pdf binary
+*.png binary
+*.zip binary
