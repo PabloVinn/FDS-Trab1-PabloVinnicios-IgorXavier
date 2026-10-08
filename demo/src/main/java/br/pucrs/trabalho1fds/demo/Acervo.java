@@ -64,24 +64,24 @@ public class Acervo {
             return false;
         }
 
-        // Horário permitido entre 8:00 e 17:00
+        
         if (voto.getHora() < 8 || voto.getHora() > 17) {
             return false;
         }
 
         Candidato c = voto.getCandidato();
 
-        // Candidato precisa estar ELEGIVEL para receber votos
+        
         if (!"ELEGIVEL".equalsIgnoreCase(c.getSituacao())) {
             return false;
         }
 
-        // Candidato deve pertencer à mesma localidade do voto
+        
         if (!c.getLocalidade().getCep().equalsIgnoreCase(voto.getLocalidade().getCep())) {
             return false;
         }
 
-        // Quantidade total de votos não pode ultrapassar o limite de eleitores da localidade
+        
         int totalVotosNaLocalidade = 0;
         for (Voto v : votos) {
             if (v.getLocalidade().getCep().equalsIgnoreCase(voto.getLocalidade().getCep())) {
@@ -151,7 +151,7 @@ public class Acervo {
     //4 endpoint
     public boolean cadastrarVoto(Map<String, Object> payload) {
         int id = Integer.parseInt(payload.get("id").toString());
-        int hora = Integer.parseInt(payload.get("hora").toString());
+        double hora = Double.parseDouble(payload.get("hora").toString());
         int numero = Integer.parseInt(payload.get("numero").toString());
         String cep = payload.get("cep").toString();
 
@@ -171,12 +171,12 @@ public class Acervo {
     public Map<String, Object> consultarEleito(String cep) {
         Candidato eleito = null;
         long maxVotosValidos = -1;
-        int horaUltimoVotoMaisCedo = 999;
+        double horaUltimoVotoMaisCedo = 17;
 
         for (Candidato c : candidatos) {
             if (c.getLocalidade().getCep().equalsIgnoreCase(cep) && "ELEGIVEL".equalsIgnoreCase(c.getSituacao())) {
                 long votosValidos = 0;
-                int ultimoVotoHora = 999;
+                double ultimoVotoHora = 17;
 
                 for (Voto v : votos) {
                     if (v.getCandidato() != null && v.getCandidato().getNumero() == c.getNumero()) {

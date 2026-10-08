@@ -1,0 +1,17 @@
+PADRÕES DE ARQUITETURA:
+
+MVC: usado na criação da classe DemoController, utilizando ela como Controller.
+
+Layered Architecture: separação da arquitetura do projeto, separando as responsabilidades entre web (DemoController) e a parte lógica (Acervo)
+
+REST: URLS endpoints e métodos HTTP (GET, POST, PUT, DELETE)para manipulação
+
+
+
+PADRÕES DE PROJETO:
+
+Façade: usado na classe Acervo, deixando o DemoController como uma interface mais simplificada(fachada), sem ter que manipular as listas, invés disso faz chamadas
+
+Chain of Responsibility: no método "ehVotoValido" ele faz uma cadeia de validações, a única diferença é que foi feito tudo dentro de um método e não uma classe separada
+
+Proxy: usado internamente pelo "@Component" e "RestController", o proprio spring framework cria classes proxy para poder realizar a injeção de dependência da classe Acervo na classe DemoController
