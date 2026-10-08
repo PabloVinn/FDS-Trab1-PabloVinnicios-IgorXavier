@@ -1,7 +1,6 @@
 package br.pucrs.trabalho1fds.demo;
 
 import java.util.*;
-import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -89,7 +88,9 @@ public class Acervo {
             }
         }
 
-        if (totalVotosNaLocalidade > voto.getLocalidade().getQtdEleitores()) {
+        // O novo voto ainda não está na lista. Os anteriores mantêm sua classificação.
+        // Se a quantidade já chegou no limite, o próximo voto será inválido -
+        if (totalVotosNaLocalidade >= voto.getLocalidade().getQtdEleitores()) {
             return false;
         }
 
@@ -155,6 +156,13 @@ public class Acervo {
         int numero = Integer.parseInt(payload.get("numero").toString());
         String cep = payload.get("cep").toString();
 
+        // Percorre pelos votos para verificar se esse ID já foi cadastrado -
+        for (Voto voto : votos) {
+            if (voto.getId() == id) {
+                return false;
+            }
+        }
+
         Localidade l = buscarLocalidade(cep);
         Candidato c = buscarCandidato(numero);
 
@@ -162,7 +170,11 @@ public class Acervo {
             return false;
         }
 
-        Voto v = new Voto(id, hora, c, l);
+        // Guarda o número mesmo quando o candidato não existe.
+        Voto v = new Voto(id, hora, numero, c, l);
+        // Salva se o voto é válido antes de colocar na lista -
+        v.setValido(ehVotoValido(v));
+        //NOTE: O voto inválido também fica salvo para aparecer nas consultas -
         votos.add(v);
         return true;
     }
@@ -170,19 +182,30 @@ public class Acervo {
     //5 endpoint
     public Map<String, Object> consultarEleito(String cep) {
         Candidato eleito = null;
-        long maxVotosValidos = -1;
+        // Começa com zero para não eleger um candidato que não recebeu votos válidos -
+        long maxVotosValidos = 0;
         double horaUltimoVotoMaisCedo = 17;
 
         for (Candidato c : candidatos) {
-            if (c.getLocalidade().getCep().equalsIgnoreCase(cep) && "ELEGIVEL".equalsIgnoreCase(c.getSituacao())) {
+            String situacao = c.getSituacao();
+            // Os estados finais permitem repetir a consulta de uma apuração.
+            if (c.getLocalidade().getCep().equalsIgnoreCase(cep)
+                    && ("ELEGIVEL".equalsIgnoreCase(situacao)
+                    || "ELEITO".equalsIgnoreCase(situacao)
+                    || "NAOELEITO".equalsIgnoreCase(situacao))) {
                 long votosValidos = 0;
-                double ultimoVotoHora = 17;
+                // Guarda o maior horário, mesmo se os votos vierem fora de ordem -
+                double ultimoVotoHora = 0;
 
                 for (Voto v : votos) {
                     if (v.getCandidato() != null && v.getCandidato().getNumero() == c.getNumero()) {
-                        if (ehVotoValido(v)) {
+                        // Usa a validade salva no cadastro, sem validar tudo novamente -
+                        if (v.isValido()) {
                             votosValidos++;
-                            ultimoVotoHora = v.getHora();
+                            // Se esse voto veio mais tarde, atualiza o último horário -
+                            if (v.getHora() > ultimoVotoHora) {
+                                ultimoVotoHora = v.getHora();
+                            }
                         }
                     }
                 }
@@ -205,6 +228,23 @@ public class Acervo {
             return null;
         }
 
+        // Percorre pelos candidatos para colocar o resultado da apuração -
+        for (Candidato c : candidatos) {
+            String situacao = c.getSituacao();
+            if (c.getLocalidade().getCep().equalsIgnoreCase(cep)
+                    && ("ELEGIVEL".equalsIgnoreCase(situacao)
+                    || "ELEITO".equalsIgnoreCase(situacao)
+                    || "NAOELEITO".equalsIgnoreCase(situacao))) {
+                if (c == eleito) {
+                    // O vencedor dessa localidade fica como ELEITO -
+                    c.setSituacao("ELEITO");
+                } else {
+                    // Os outros candidatos aptos dessa localidade ficam como NAOELEITO -
+                    c.setSituacao("NAOELEITO");
+                }
+            }
+        }
+
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("numero", eleito.getNumero());
         res.put("nome", eleito.getNome());
@@ -219,8 +259,10 @@ public class Acervo {
         long invalidos = 0;
 
         for (Voto v : votos) {
-            if (v.getCandidato() != null && v.getCandidato().getNumero() == numero) {
-                if (ehVotoValido(v)) {
+            // Compara pelo número informado, mesmo se o candidato não existir -
+            if (v.getNumeroCandidato() == numero) {
+                // Separa os válidos e inválidos usando o resultado salvo no voto -
+                if (v.isValido()) {
                     validos++;
                 } else {
                     invalidos++;
@@ -245,8 +287,10 @@ public class Acervo {
                 long invalidos = 0;
 
                 for (Voto v : votos) {
-                    if (v.getCandidato() != null && v.getCandidato().getNumero() == c.getNumero()) {
-                        if (ehVotoValido(v)) {
+                    // Filtra pelo número do candidato dessa localidade -
+                    if (v.getNumeroCandidato() == c.getNumero()) {
+                        // Mantém a classificação feita quando o voto foi cadastrado -
+                        if (v.isValido()) {
                             validos++;
                         } else {
                             invalidos++;
@@ -278,8 +322,9 @@ public class Acervo {
                     long validos = 0;
 
                     for (Voto v : votos) {
-                        if (v.getCandidato() != null && v.getCandidato().getNumero() == c.getNumero()) {
-                            if (ehVotoValido(v)) {
+                        if (v.getNumeroCandidato() == c.getNumero()) {
+                            // Soma apenas os votos que foram salvos como válidos -
+                            if (v.isValido()) {
                                 validos++;
                             }
                         }
@@ -308,10 +353,35 @@ public class Acervo {
     //9 endpoint
     public Map<String, Object> atualizarSituacao(int numero, String status) {
         Candidato c = buscarCandidato(numero);
-        if (c == null) {
+        // Valida se encontrou o candidato e se veio uma nova situação -
+        if (c == null || status == null) {
             return null;
         }
 
+        // Deixa o status em maiúsculas para comparar com as situações do candidato -
+        status = status.toUpperCase(Locale.ROOT);
+        String atual = c.getSituacao();
+        boolean permitida = false;
+
+        if ("PRECANDIDATO".equalsIgnoreCase(atual)) {
+            // Pré-candidato pode ser aprovado, reprovado ou removido -
+            permitida = status.equals("ELEGIVEL") || status.equals("INELEGIVEL")
+                    || status.equals("REMOVIDO");
+        } else if ("INELEGIVEL".equalsIgnoreCase(atual)) {
+            // Inelegível pode voltar a ser elegível ou ser removido -
+            permitida = status.equals("ELEGIVEL") || status.equals("REMOVIDO");
+        } else if ("ELEGIVEL".equalsIgnoreCase(atual)) {
+            // Elegível pode ficar inelegível ou receber o resultado da eleição -
+            permitida = status.equals("INELEGIVEL") || status.equals("ELEITO")
+                    || status.equals("NAOELEITO");
+        }
+
+        // Não aceita uma situação desconhecida nem altera os estados finais -
+        if (!permitida) {
+            return null;
+        }
+
+        // Atualiza a situação depois de verificar se essa mudança é permitida -
         c.setSituacao(status);
 
         Map<String, Object> map = new LinkedHashMap<>();
@@ -331,6 +401,13 @@ public class Acervo {
             return false;
         }
 
+        // Apenas pré-candidato e inelegível podem ser removidos -
+        if (!"PRECANDIDATO".equalsIgnoreCase(c.getSituacao())
+                && !"INELEGIVEL".equalsIgnoreCase(c.getSituacao())) {
+            return false;
+        }
+
+        //NOTE: A remoção é lógica, então o candidato continua na lista -
         c.setSituacao("REMOVIDO");
         return true;
     }

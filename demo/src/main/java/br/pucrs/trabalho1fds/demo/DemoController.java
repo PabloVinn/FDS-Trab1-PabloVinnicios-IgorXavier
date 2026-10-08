@@ -30,7 +30,8 @@ public class DemoController{
     }
 
     //2
-    @GetMapping("/cadastro/listacandidatoslocalidade/{cep}/situacao/{situacao}")
+    @GetMapping({"/cadastro/listacandidatoslocalidade/{cep}/situação/{situacao}",
+                 "/cadastro/listacandidatoslocalidade/{cep}/situacao/{situacao}"})
     public List<Map<String, Object>> listaCandidatosLocalidadeSituacao(@PathVariable String cep, @PathVariable String situacao) {
         return acervo.listarCandidatosLocalidadeSituacao(cep, situacao);
     }
@@ -79,8 +80,7 @@ public class DemoController{
 
     //10
     @DeleteMapping("/cadastro/removecandidato")
-    public boolean removeCandidato(@RequestBody Map<String, Object> payload) {
-        int numero = Integer.parseInt(payload.get("numero").toString());
+    public boolean removeCandidato(@RequestBody int numero) {
         return acervo.removerCandidato(numero);
     }
 
