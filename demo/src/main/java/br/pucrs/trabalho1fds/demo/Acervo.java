@@ -51,5 +51,10 @@ public class Acervo {
 
         return true;
     }
+
+    public List<Candidato> getCandidatos() {
+        // Aqui é para pegar os candidatos ja criado em acervos
+        return candidatos;
+    }
     
 }
